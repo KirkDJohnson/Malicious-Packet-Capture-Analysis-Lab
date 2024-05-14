@@ -2,7 +2,7 @@
 
 <br />
 <h2>Description</h2>
-This lab 
+In this hybrid lab and walkthrough, I received a packet capture file of the traffic after an end user opened an email from a client containing a macro, resulting in a program crash. Once I open a packet capture for analysis, I follow a series of simple triaging steps to gain basic information about the file. This includes examining Capture File Properties to determine the duration of the capture in both time and number of packets, and reviewing conversation statistics to determine the amount of device communication and data that was transferred. Within the first few packets, I observed a DNS query from the client to the domain klychenogg[.]com. Interestingly, the IP that resolved this domain happened to be the address that transferred the most data within the packet capture. With the IP address and domain of the of the first connection of the packet capture, I conducted threat intelligence and discovered the domain to be known malicious. A couple of packets lower, a HTTP GET request to the domain downloaded a file with the .spr extension. However, I examined the HTTP stream of the request and the stream data revealed the header beginning with "MZ" followed by "This program cannot be run in DOS mode," indicating the file is actually a portable executable, such as .exe or .dll. Given the common employment of such obfuscation techniques by malware to deceive users, I extracted the file from Wireshark to my virtual machine and obtained its hash using sha256sum. Uploading the hash to VirusTotal, anti-virus vendors confirmed the malware to be Ursnif, a form of spyware. Now that the client machine is confirmed to be infected with malware, I shifted focus to other IP addresses within the packet capture to identify additional indicators of compromise or attack. Most of these IP addresses were associated with domains flagged as malicious, however, within the relations tab, the resolved domains all pointed back to Ursnif's attack chain. Lastly, I uploaded the packet capture to Zui (formerly Brim) for additional analysis, I filtered for event_type == "alert," and twelve alerts were generated, the first three from the final IP address within the conversations tab. That IP address was identified as both sending and receiving encrypted traffic from the client, indicative of a command and control server (C2) for Dridex, likely responsible for receiving data from the spyware. With this information, I concluded the investigation having identified the initial malware-spawning file, the domains involved in further malware downloads, and the IP address facilitating the command and control server. This lab exercise provided invaluable hands-on experience in incident response, threat intelligence, and packet analysis.
 
 <h2>Utilities Used</h2>
 
@@ -18,7 +18,7 @@ This lab
 <h2>Lab Overview:</h2>
 
 <p align="center">
-My go-to first step when first analyzing a packet capture file is to view Capture File Properties in statistics to see how many packets, how long the capture was, and when it took place.<br/>
+After reviewing the sceranrio, the description highlights what likely could be malware was downloaded onto Sarah's computer by opening a file from a customer. With the provided packet capture, my go-to first step when first analyzing a packet capture file is to view Capture File Properties in statistics to see how many packets, how long the capture was, and when it took place.<br/>
 <img src="https://github.com/KirkDJohnson/Malicious-Packet-Capture-Analysis-Lab/assets/164972007/6ff287ad-8204-49a4-8dfa-af0df3a198cc" alt="Dridex Malware Analysis"/>
 <br />
 <br />
@@ -58,25 +58,16 @@ I was running into some deadends so I decided to switch tools and download Brim 
 <img src="https://github.com/KirkDJohnson/Malicious-Packet-Capture-Analysis-Lab/assets/164972007/6aff6b5b-96e5-4f32-8a88-c90995045c6f" alt="Dridex Malware Analysis"/>
 <br />
 <br />
-Text <br/>
-<img src="" alt="Dridex Malware Analysis"/>
+The first three alerts were generated from the last IP in the list that was not investigated and upon examining the the alert signature and category it can be seen that his IP acted as the C2 or Command and Control server in which the malware Ursnif and Dridex sending the data that is stolen with the trojan. <br/>
+<img src="https://github.com/KirkDJohnson/Malicious-Packet-Capture-Analysis-Lab/assets/164972007/392f12a0-52ae-4a3e-9847-f98032334970" alt="Dridex Malware Analysis"/>
 <br />
 <br />
-Text <br/>
-<img src="" alt="Dridex Malware Analysis"/>
+I now found the type of malware affecting the host, the domain and IP it was downlaoded from, and the IP addresses that is being used for the C2 server, with this inforamtion appropriate measure can now be taken to block the malicious domains and IP adressess. It would also be recomdned to re-image the host machine to ensure removal of the spyware.<br/>
 <br />
 <br />
-Text <br/>
-<img src="" alt="Dridex Malware Analysis"/>
-<br />
-<br />
-Text <br/>
-<img src="" alt="Dridex Malware Analysis"/>
-<br />
-<br />
-</p>
+
 <h2>Thoughts</h2>
-This lab 
+This lab has been made me more confident and profiecent utilizing Wireshark and Brim/Zui and  demonstrated that an attacker can use mulitple IP addresses and domains when during an attacattacks against a host. Although the clear text HTTP GET request in the sixth packet confirmed the primary malware's existence on the machine, throughout the investigation I uncovered additional layers of complexity the threat actor used in the cyebr kill chain. The walkthrough I was following mentioned that Dridex was part of the attack, however, through Wireshark I could not find any evidence of this which led my to switch to Zui. Having the ability to use mulitple tools when investigating is a crucial skill and I am glad that this lab encouraged me use more than one tool in the analysis. Lastly, being thorough and checking all domains and IP addresses demonstrates the importance of comprehensive threat intelligence in cybersecurity defense, as it equips enterprises to better mitigate similar attacks in the future.
 <!--
  ```diff
 - text in red
